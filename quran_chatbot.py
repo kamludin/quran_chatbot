@@ -4,38 +4,64 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# Custom CSS for better Arabic rendering
+# Custom CSS for enhanced UI
 st.markdown("""
 <style>
+/* Hide Streamlit menu, footer, and header */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+body {
+    background-color: #f4f4f4;
+    font-family: 'Arial', sans-serif;
+}
+
 .arabic {
     font-family: 'Amiri', serif;
     font-size: 24px;
     text-align: right;
     direction: rtl;
     line-height: 2;
+    color: #2c3e50;
 }
+
 .english {
-    font-size: 16px;
+    font-size: 18px;
     color: #555;
     margin-top: 10px;
 }
+
 .result-block {
     padding: 20px;
     margin: 15px 0;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
 .bilingual-title {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: bold;
     text-align: center;
     margin-bottom: 20px;
+    color: #1E88E5;
 }
+
 .bilingual-subtitle {
-    font-size: 20px;
+    font-size: 22px;
     text-align: center;
     margin-bottom: 30px;
+    color: #555;
+}
+
+.search-box {
+    width: 100%;
+    font-size: 18px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -64,7 +90,6 @@ def load_embeddings():
         for _, row in quran_df.iterrows()
     ]
     
-    st.write("جارٍ تحميل النموذج وإنشاء التضمينات...")
     embeddings = model.encode(bilingual_texts, show_progress_bar=True)
     
     dimension = embeddings.shape[1]
@@ -90,14 +115,19 @@ def main():
 
     reciter_url = "https://everyayah.com/data/Alafasy_64kbps/{surah_no:03d}{ayah_no:03d}.mp3"
     
+    # Input box with styled search bar
     user_query = st.text_input("اكتب سؤالك هنا | Enter your question here:", 
-                             placeholder="مثال: آيات عن الرحمة أو which verse shows mercy")
+                               placeholder="مثال: آيات عن الرحمة أو which verse shows mercy", 
+                               key="search_box")
     
-    if user_query:
+    # Search button with better spacing
+    search_btn = st.button("🔍 بحث | Search", key="search_button")
+
+    if user_query and search_btn:
         query_embedding = model.encode([user_query])
         D, I = index.search(query_embedding.astype('float32'), k=5)
         
-        st.subheader("النتائج | Results:")
+        st.subheader("📖 النتائج | Results:")
         for idx in I[0]:
             verse_data = quran_df.iloc[idx]
             
